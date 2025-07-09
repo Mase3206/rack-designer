@@ -1,10 +1,17 @@
 <script lang="ts">
-    import "$lib/main.css"
+    import { type Snippet } from "svelte";
 
-    let { children } = $props();
+    import "$lib/main.css"
+    import Navbar from "$lib/components/nav/Navbar.svelte";
+    import NavItem from "$lib/components/nav/NavItem.svelte";
+    import type { svelte } from "@sveltejs/vite-plugin-svelte";
+
+    let { children }: { children: Snippet } = $props();
 </script>
 
-<a href="/projects">Projects</a>
-<a href="/">Home</a>
+<Navbar>
+    <NavItem text="Welcome" href="/" title="Welcome screen" />
+    <NavItem text="Projects" href="/projects" title="Project manager" />
+</Navbar>
 
 {@render children()}
