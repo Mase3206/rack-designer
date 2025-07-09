@@ -3,6 +3,8 @@
     let { data }: PageProps = $props();
 </script>
 
+
+
 <ul>
     {#each data.projects as project}
         <li>
@@ -11,5 +13,3 @@
         </li>
     {/each}
 </ul>
-
-<a href="/">new</a>

@@ -10,7 +10,7 @@
 </script>
 
 <Navbar>
-    <NavItem text="Welcome" href="/" title="Welcome screen" />
+    <NavItem text="Home" href="/" title="Home screen" />
     <NavItem text="Projects" href="/projects" title="Project manager" />
 </Navbar>
 
