@@ -1,13 +1,43 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
-  "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": [
-    "main"
-  ],
-  "permissions": [
-    "core:default",
-    "opener:default",
-    "fs:default"
-  ]
+    "$schema": "../gen/schemas/desktop-schema.json",
+    "identifier": "default",
+    "description": "Capability for the main window",
+    "windows": [
+        "main"
+    ],
+    "permissions": [
+        "core:default",
+        "opener:default",
+        "fs:default",
+        {
+            "identifier": "fs:allow-exists",
+            "allow": [{
+                "path": "$DOCUMENT/Rack Designer"
+            }]
+        },
+        {
+            "identifier": "fs:allow-document-read-recursive",
+            "allow": [{
+                "path": "$DOCUMENT/Rack Designer"
+            }]
+        },
+        {
+            "identifier": "fs:allow-document-write-recursive",
+            "allow": [{
+                "path": "$DOCUMENT/Rack Designer"
+            }]
+        },
+        {
+            "identifier": "fs:allow-document-meta-recursive",
+            "allow": [{
+                "path": "$DOCUMENT/Rack Designer"
+            }]
+        },
+        "fs:allow-document-read",
+        "fs:allow-document-write",
+        "fs:allow-document-meta",
+        "dialog:allow-open",
+        "dialog:allow-message",
+        "dialog:default"
+    ]
 }

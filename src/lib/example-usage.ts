@@ -98,7 +98,7 @@ export async function listProjectsExample(): Promise<void> {
         
         console.log(`Found ${projects.length} projects:`);
         for (const project of projects) {
-            console.log(`- ${project.name} (${project.path})`);
+            console.log(`- ${project.manifest.name} (${project.containerPath})`);
         }
     } catch (error) {
         console.error('Failed to list projects:', error);

@@ -9,18 +9,13 @@
         title,
         classes = []
     }: {
+        /** Visible text */
         text: string;
         href: string;
+        /** Hover text */
         title: string;
         classes?: string[];
     } = $props();
-
-    // let isActive = $derived(page.url.pathname == href);
-
-    // if ((() => isActive)()) {
-    //     console.log("active changed")
-    //     // classes.push("bg-gray-200 dark:bg-gray-800")
-    // }
 </script>
 
 

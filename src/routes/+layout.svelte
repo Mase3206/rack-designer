@@ -14,4 +14,6 @@
     <NavItem text="Projects" href="/projects" title="Project manager" />
 </Navbar>
 
-{@render children()}
+<main>
+    {@render children()}
+</main>

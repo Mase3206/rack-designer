@@ -7,10 +7,13 @@ import {
     readTextFile, 
     writeTextFile,
     readDir,
-    remove
+    remove,
+    FileHandle,
+    mkdir
 } from '@tauri-apps/plugin-fs';
 import { open } from '@tauri-apps/plugin-dialog';
 import { join, extname, basename, documentDir } from '@tauri-apps/api/path';
+
 
 
 
@@ -70,6 +73,7 @@ export interface ProjectContainer {
 export class ProjectManager {
     private static readonly MANIFEST_FILENAME = 'manifest.json';
     private static readonly ASSETS_FOLDER = 'assets';
+    private static readonly PROJECTS_FOLDER = "Rack Designer"
     
 
     /**
@@ -78,25 +82,42 @@ export class ProjectManager {
     static async createProject(name: string): Promise<ProjectContainer> {
         const projectId = generateUuid();
         const sanitizedName = name.replace(/[^a-zA-Z0-9-_]/g, '_');
-        const containerPath = await join('RackDesigner', 'Projects', sanitizedName);
+        const containerPath = await join(this.PROJECTS_FOLDER, 'Projects', sanitizedName);
         
         // Create project directory structure
-        const documentsPath = await documentDir();
-        const fullContainerPath = await join(documentsPath, containerPath);
-        const assetsPath = await join(fullContainerPath, this.ASSETS_FOLDER);
+        // const documentsPath = await documentDir();
+        // const fullContainerPath = await join(documentsPath, containerPath);
+        const assetsPath = await join(containerPath, this.ASSETS_FOLDER);
         
-        // Create directories
-        try {
-            await create(fullContainerPath);
-        } catch (error) {
-            // Directory might already exist, that's okay
+        // Create parent directory for all projects if not present
+        const projectsPath = await join(this.PROJECTS_FOLDER, 'Projects')
+        if (!exists(this.PROJECTS_FOLDER, { baseDir: BaseDirectory.Document })) {
+            mkdir(this.PROJECTS_FOLDER, { baseDir: BaseDirectory.Document })
         }
+
+        if (!await exists(containerPath, { baseDir: BaseDirectory.Document })) {
+            mkdir(containerPath, { baseDir: BaseDirectory.Document })
+        } else {
+            throw new Error(`Project at path ${containerPath} already exists.`)
+        }
+
+        if (!await exists(assetsPath, { baseDir: BaseDirectory.Document })) {
+            mkdir(assetsPath, { baseDir: BaseDirectory.Document });
+        } else {
+            throw new Error(`Assets folder in project ${sanitizedName} at ${containerPath} already exists.`)
+        }
+
+        // try {
+        //     await create(fullContainerPath);
+        // } catch (error) {
+        //     // Directory might already exist, that's okay
+        // }
         
-        try {
-            await create(assetsPath);
-        } catch (error) {
-            // Directory might already exist, that's okay
-        }
+        // try {
+        //     await create(assetsPath);
+        // } catch (error) {
+        //     // Directory might already exist, that's okay
+        // }
         
         // Create manifest
         const manifest: ProjectFile = {
@@ -111,46 +132,46 @@ export class ProjectManager {
         
         // Save manifest
         await this.saveManifest(containerPath, manifest);
-        
+
         return { containerPath, manifest };
     }
     
 
     /**
-     * Opens an existing project
+     * Opens an existing project via file select prompt
      */
     static async openProject(): Promise<ProjectContainer | null> {
         const documentsPath = await documentDir();
         const selected = await open({
             directory: true,
-            defaultPath: await join(documentsPath, 'RackDesigner', 'Projects'),
+            defaultPath: await join(documentsPath, this.PROJECTS_FOLDER, 'Projects'),
             title: 'Select Project Folder'
         });
         
         if (!selected) return null;
         
-        try {
-            const manifestPath = await join(selected as string, this.MANIFEST_FILENAME);
-            const manifestExists = await exists(manifestPath);
-            
-            if (!manifestExists) {
-                throw new Error('Invalid project folder: manifest.json not found');
-            }
-            
-            const manifestContent = await readTextFile(manifestPath);
-            const manifest: ProjectFile = JSON.parse(manifestContent);
-            
-            // Convert absolute path to relative path from Documents
-            const containerPath = (selected as string).replace(documentsPath + '/', '');
-            
-            return { containerPath, manifest };
-        } catch (error) {
-            console.error('Failed to open project:', error);
-            return null;
+        // try {
+        const manifestPath = await join(selected as string, this.MANIFEST_FILENAME);
+        const manifestExists = await exists(manifestPath);
+        
+        if (!manifestExists) {
+            throw new Error('Invalid project folder: manifest.json not found');
         }
+        
+        const manifestContent = await readTextFile(manifestPath);
+        const manifest: ProjectFile = JSON.parse(manifestContent);
+        
+        // Convert absolute path to relative path from Documents
+        const containerPath = (selected as string).replace(documentsPath + '/', '');
+        
+        return { containerPath, manifest };
+        // } catch (error) {
+        //     console.error('Failed to open project:', error);
+        //     return null;
+        // }
     }
 
-    
+
     /**
      * Adds a texture to the project by copying it to the assets folder
      */
@@ -166,45 +187,45 @@ export class ProjectManager {
         
         if (!selected) return null;
         
-        try {
-            const sourcePath = selected as string;
-            const originalName = await basename(sourcePath);
-            const extension = await extname(sourcePath);
-            const textureId = generateUuid();
-            const destinationFilename = `texture_${textureId}${extension}`;
-            
-            // Copy file to project assets folder
-            const documentsPath = await documentDir();
-            const fullContainerPath = await join(
-                documentsPath,
-                container.containerPath
-            );
-            const destinationPath = await join(
-                fullContainerPath,
-                this.ASSETS_FOLDER,
-                destinationFilename
-            );
-            
-            await copyFile(sourcePath, destinationPath);
-            
-            // Create texture object
-            const texture: Texture = {
-                id: textureId,
-                path: await join(this.ASSETS_FOLDER, destinationFilename),
-                originalName,
-                extension
-            };
-            
-            // Update manifest
-            container.manifest.textures.push(texture);
-            container.manifest.modifiedAt = new Date().toISOString();
-            await this.saveManifest(container.containerPath, container.manifest);
-            
-            return texture;
-        } catch (error) {
-            console.error('Failed to add texture:', error);
-            return null;
-        }
+        // try {
+        const sourcePath = selected as string;
+        const originalName = await basename(sourcePath);
+        const extension = await extname(sourcePath);
+        const textureId = generateUuid();
+        const destinationFilename = `texture_${textureId}${extension}`;
+        
+        // Copy file to project assets folder
+        const documentsPath = await documentDir();
+        const fullContainerPath = await join(
+            documentsPath,
+            container.containerPath
+        );
+        const destinationPath = await join(
+            fullContainerPath,
+            this.ASSETS_FOLDER,
+            destinationFilename
+        );
+        
+        await copyFile(sourcePath, destinationPath);
+        
+        // Create texture object
+        const texture: Texture = {
+            id: textureId,
+            path: await join(this.ASSETS_FOLDER, destinationFilename),
+            originalName,
+            extension
+        };
+        
+        // Update manifest
+        container.manifest.textures.push(texture);
+        container.manifest.modifiedAt = new Date().toISOString();
+        await this.saveManifest(container.containerPath, container.manifest);
+        
+        return texture;
+        // } catch (error) {
+        //     console.error('Failed to add texture:', error);
+        //     return null;
+        // }
     }
 
     
@@ -212,36 +233,36 @@ export class ProjectManager {
      * Removes a texture from the project
      */
     static async removeTexture(container: ProjectContainer, textureId: string): Promise<boolean> {
+        // try {
+        const textureIndex = container.manifest.textures.findIndex(t => t.id === textureId);
+        if (textureIndex === -1) return false;
+        
+        const texture = container.manifest.textures[textureIndex];
+        
+        // Remove file from assets folder
+        const documentsPath = await documentDir();
+        const fullContainerPath = await join(
+            documentsPath,
+            container.containerPath
+        );
+        const texturePath = await join(fullContainerPath, texture.path);
+        
         try {
-            const textureIndex = container.manifest.textures.findIndex(t => t.id === textureId);
-            if (textureIndex === -1) return false;
-            
-            const texture = container.manifest.textures[textureIndex];
-            
-            // Remove file from assets folder
-            const documentsPath = await documentDir();
-            const fullContainerPath = await join(
-                documentsPath,
-                container.containerPath
-            );
-            const texturePath = await join(fullContainerPath, texture.path);
-            
-            try {
-                await remove(texturePath);
-            } catch (error) {
-                console.warn('Failed to remove texture file:', error);
-            }
-            
-            // Remove from manifest
-            container.manifest.textures.splice(textureIndex, 1);
-            container.manifest.modifiedAt = new Date().toISOString();
-            await this.saveManifest(container.containerPath, container.manifest);
-            
-            return true;
+            await remove(texturePath);
         } catch (error) {
-            console.error('Failed to remove texture:', error);
-            return false;
+            console.warn('Failed to remove texture file:', error);
         }
+        
+        // Remove from manifest
+        container.manifest.textures.splice(textureIndex, 1);
+        container.manifest.modifiedAt = new Date().toISOString();
+        await this.saveManifest(container.containerPath, container.manifest);
+        
+        return true;
+        // } catch (error) {
+        //     console.error('Failed to remove texture:', error);
+        //     return false;
+        // }
     }
 
     
@@ -275,20 +296,21 @@ export class ProjectManager {
     /**
      * Lists all available projects
      */
-    static async listProjects(): Promise<{ name: string; path: string; }[]> {
-        try {
+    static async listProjects(): Promise<ProjectContainer[]> {
+        // try {
             const documentsPath = await documentDir();
             const projectsPath = await join(
                 documentsPath,
-                'RackDesigner',
+                this.PROJECTS_FOLDER,
                 'Projects'
             );
             
             const projectsExist = await exists(projectsPath);
-            if (!projectsExist) return [];
+            if (!projectsExist) { return [] };
             
             const entries = await readDir(projectsPath);
-            const projects: { name: string; path: string; }[] = [];
+            if (entries.length == 0) { return [] };
+            const projects: ProjectContainer[] = [];
             
             for (const entry of entries) {
                 if (entry.isDirectory) {
@@ -296,18 +318,19 @@ export class ProjectManager {
                     const manifestExists = await exists(manifestPath);
                     
                     if (manifestExists) {
+                        const manifest: ProjectFile = JSON.parse(await readTextFile(manifestPath));
                         projects.push({
-                            name: entry.name,
-                            path: await join('RackDesigner', 'Projects', entry.name)
+                            containerPath: await join(this.PROJECTS_FOLDER, 'Projects', entry.name),
+                            manifest
                         });
                     }
                 }
             }
             
             return projects;
-        } catch (error) {
-            console.error('Failed to list projects:', error);
-            return [];
-        }
+        // } catch (error) {
+        //     console.error('Failed to list projects:', error);
+        //     return [];
+        // }
     }
 }

@@ -2,10 +2,12 @@
     let { children } = $props();
 </script>
 
-<header class="mx-3 my-2 p-0">
-    <ul class="flex">
-        {@render children()}
-    </ul>
-
-    <hr />
-</header>
+<div class="mx-2">
+    <header class="my-1 p-0">
+        <ul class="flex">
+            {@render children()}
+        </ul>
+    
+    </header>
+    <hr class="mb-4" />
+</div>
