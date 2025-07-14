@@ -3,21 +3,28 @@
     import { Modal, Button, Label, Input } from "flowbite-svelte";
     import { ProjectManager as pm, type ProjectContainer } from "$lib/project";
     import { setContext } from "svelte";
+    import { goto } from "$app/navigation";
 
     let { data }: PageProps = $props();
     let newModalIsOpen = $state(false);
     // let projectContainer: ProjectContainer | undefined = $state();
 
     async function onSubmitNew(ev: SubmitEvent) {
-        const formData = new FormData(ev.target as HTMLFormElement);
+        // const formData = new FormData(ev.target as HTMLFormElement);
 
-        // Check the data validity and prevent dialog closing if needed.
-        // if( ! checkValid(formData) ) ev.preventDefault();
+        // // Check the data validity and prevent dialog closing if needed.
+        // // if( ! checkValid(formData) ) ev.preventDefault();
 
-        const object = Object.fromEntries(formData) as {projectName: string};
-        alert(JSON.stringify(object));
-        let projectContainer = await pm.createProject(object.projectName);
-        // loadProject(projectContainer);
+        // const object = Object.fromEntries(formData) as {projectName: string};
+        // alert(JSON.stringify(object));
+        // let projectContainer = await pm.createProject(object.projectName);
+        // // pm.setActiveProject(projectContainer);
+        // globalState.activeProject = projectContainer;
+        // goto(getEditorUrl(projectContainer));
+    }
+
+    function getEditorUrl(container: ProjectContainer) {
+        return `/editor?project=${JSON.stringify(container)}`
     }
 </script>
 
@@ -46,7 +53,10 @@
     {#each data.projects as project}
         <li>
             {project.manifest.name} &nbsp;
-            {project.manifest.modifiedAt}
+            {project.manifest.modifiedAt} &nbsp;
+            <form action="#">
+            <Button href={getEditorUrl(project)}>Load</Button>
+            </form>
         </li>
     {/each}
 </ul>
