@@ -15,8 +15,6 @@ import {
     join as _join,
     extname as _extname,
     basename as _basename,
-    documentDir as _documentDir,
-    BaseDirectory as _BaseDirectory,
     sep as _sep
 } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';

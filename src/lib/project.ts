@@ -23,7 +23,7 @@ import {
     rawCopyDir,
     rawWriteTextFile,
 } from "$lib/io";
-import { documentDir } from "@tauri-apps/api/path";
+import { documentDir, appLocalDataDir } from "@tauri-apps/api/path";
 import { P } from "flowbite-svelte";
 
 
@@ -95,6 +95,14 @@ export class ProjectManager {
         return this._projectsFolder;
     }
 
+    private static _localAppDataFolder: Path | null = null;
+    private static async getLocalDataFolder(): Promise<Path> {
+        if (!this._localAppDataFolder) {
+            this._localAppDataFolder = new Path([], await appLocalDataDir());
+        }
+        return this._localAppDataFolder;
+    }
+
     /**
      * Creates a new project container
      */
@@ -148,7 +156,9 @@ export class ProjectManager {
                 Promise.reject("The given project does not have a manifest folder and cannot be opened.")
             }
             const manifest: Manifest = JSON.parse(await readTextFile(await manifestPath.absolute()))
-            return { path: folderName, manifest };
+            const project: Project = { path: folderName, manifest }
+            ProjectManager.setCurrentProject(project);
+            return project;
 
         } else {
             const projectPath = await (await this.getProjectsFolder()).join(folderName)
@@ -157,8 +167,28 @@ export class ProjectManager {
                 Promise.reject("The given project does not have a manifest folder and cannot be opened.")
             }
             const manifest: Manifest = JSON.parse(await readTextFile(await manifestPath.absolute()))
-            return { path: projectPath, manifest };
+            const project: Project = { path: projectPath, manifest };
+            ProjectManager.setCurrentProject(project);
+            return project;
         }
+    }
+
+
+    /** Get the Project data of the currently-open project. */
+    static async getCurrentProject(): Promise<Project> {
+        const currentInfoPath = await (await ProjectManager.getLocalDataFolder()).join('current.json');
+        const currentProject: Project = JSON.parse(await currentInfoPath.absolute())
+        return currentProject;
+    }
+
+
+    /** Set the current Project. */
+    private static async setCurrentProject(project: Project) {
+        const currentInfoPath = await (await ProjectManager.getLocalDataFolder()).join('current.json');
+        rawWriteTextFile(
+            await currentInfoPath.absolute(),
+            JSON.stringify(project, null, 4)
+        );
     }
 
 
