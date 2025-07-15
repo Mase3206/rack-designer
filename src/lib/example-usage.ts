@@ -1,6 +1,6 @@
 // Example usage of the ProjectManager and container format
 
-import { ProjectManager, type ProjectContainer, type Texture } from './project.js';
+import { ProjectManager, type Project, type Texture } from './project.js';
 
 /**
  * Example: Creating a new project and adding textures
@@ -8,11 +8,11 @@ import { ProjectManager, type ProjectContainer, type Texture } from './project.j
 export async function createNewProjectExample() {
     try {
         // Create a new project
-        const container: ProjectContainer = await ProjectManager.createProject("My Rack Project");
+        const container: Project = await ProjectManager.createProject("My Rack Project");
         
         console.log(`Created project: ${container.manifest.name}`);
         console.log(`Project ID: ${container.manifest.id}`);
-        console.log(`Container path: ${container.containerPath}`);
+        console.log(`Container path: ${container.path}`);
         
         return container;
     } catch (error) {
@@ -24,21 +24,21 @@ export async function createNewProjectExample() {
 /**
  * Example: Opening an existing project
  */
-export async function openExistingProjectExample(): Promise<ProjectContainer | null> {
+export async function openExistingProjectExample(): Promise<Project | null> {
     try {
-        const container = await ProjectManager.openProject();
+        const project = await ProjectManager.openProject(await ProjectManager.importProject());
         
-        if (container) {
-            console.log(`Opened project: ${container.manifest.name}`);
-            console.log(`Number of textures: ${container.manifest.textures.length}`);
+        if (project) {
+            console.log(`Opened project: ${project.manifest.name}`);
+            console.log(`Number of textures: ${project.manifest.textures.length}`);
             
             // List all textures
-            for (const texture of container.manifest.textures) {
+            for (const texture of project.manifest.textures) {
                 console.log(`- ${texture.originalName} (${texture.extension})`);
             }
         }
         
-        return container;
+        return project;
     } catch (error) {
         console.error('Failed to open project:', error);
         return null;
@@ -48,17 +48,17 @@ export async function openExistingProjectExample(): Promise<ProjectContainer | n
 /**
  * Example: Adding a texture to a project
  */
-export async function addTextureExample(container: ProjectContainer): Promise<Texture | null> {
+export async function addTextureExample(project: Project): Promise<Texture | null> {
     try {
-        const texture = await ProjectManager.addTexture(container);
+        const texture = await ProjectManager.addTexture(project);
         
         if (texture) {
             console.log(`Added texture: ${texture.originalName}`);
             console.log(`Texture ID: ${texture.id}`);
-            console.log(`Relative path: ${texture.path}`);
+            console.log(`Relative path: ${await ProjectManager.getTexturePath(project, texture)}`);
             
             // Get the full path for display purposes
-            const fullPath = await ProjectManager.getTexturePath(container, texture);
+            const fullPath = await ProjectManager.getTexturePath(project, texture);
             console.log(`Full path: ${fullPath}`);
         }
         
@@ -72,7 +72,7 @@ export async function addTextureExample(container: ProjectContainer): Promise<Te
 /**
  * Example: Removing a texture from a project
  */
-export async function removeTextureExample(container: ProjectContainer, textureId: string): Promise<boolean> {
+export async function removeTextureExample(container: Project, textureId: string): Promise<boolean> {
     try {
         const success = await ProjectManager.removeTexture(container, textureId);
         
@@ -98,7 +98,7 @@ export async function listProjectsExample(): Promise<void> {
         
         console.log(`Found ${projects.length} projects:`);
         for (const project of projects) {
-            console.log(`- ${project.manifest.name} (${project.containerPath})`);
+            console.log(`- ${project.manifest.name} (${project.path})`);
         }
     } catch (error) {
         console.error('Failed to list projects:', error);
