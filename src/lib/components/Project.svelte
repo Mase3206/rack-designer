@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { type ProjectContainer } from "$lib/project";
+    import { type Project } from "$lib/project";
     import { setContext, getContext } from "svelte";
     import { Alert } from "flowbite-svelte";
 

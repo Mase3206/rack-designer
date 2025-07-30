@@ -8,14 +8,15 @@ import {
     remove as _removeFileOrDir,
     FileHandle as _FileHandle,
     mkdir as _mkdir,
-    lstat as _lstat
+    lstat as _lstat,
 } from '@tauri-apps/plugin-fs';
 import { open as _openFileDirPicker } from '@tauri-apps/plugin-dialog';
 import {
     join as _join,
     extname as _extname,
     basename as _basename,
-    sep as _sep
+    sep as _sep,
+    resolve as _resolve,
 } from '@tauri-apps/api/path';
 import { invoke } from '@tauri-apps/api/core';
 
@@ -46,14 +47,17 @@ export class Path {
     // };
 
     /** Each directory and folder in the path, relative to BASE_DIR. */
-    private basePathParts: string[];
-    private pathParts: string[];
+    public basePathParts: string[];
+    public pathParts: string[];
 
     constructor(strPathParts: string[] | String, basePath?: Path | string) {
         // const baseParts: string[] = basePath?.pathParts() ?? [];
         if (basePath instanceof Path) {
             this.basePathParts = basePath?.pathParts ?? [];
         } else {
+            // this.basePathParts = basePath?.split(_sep()).filter((el) => {
+            //     return el != null;
+            // }) ?? [];
             this.basePathParts = basePath?.split(_sep()) ?? [];
         }
 
@@ -70,7 +74,7 @@ export class Path {
 
     /** The absolute path of this Path. */
     public async absolute(): Promise<string> {
-        return _join(
+        return _resolve(
             ...this.basePathParts,
             ...this.pathParts
         );

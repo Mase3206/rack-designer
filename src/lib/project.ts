@@ -90,7 +90,7 @@ export class ProjectManager {
     private static _projectsFolder: Path | null = null;
     private static async getProjectsFolder(): Promise<Path> {
         if (!this._projectsFolder) {
-            this._projectsFolder = new Path(["Rack Designer", "Projects"], await documentDir());
+            this._projectsFolder = new Path(["Rack Designer", "Projects"]);
         }
         return this._projectsFolder;
     }
@@ -98,7 +98,7 @@ export class ProjectManager {
     private static _localAppDataFolder: Path | null = null;
     private static async getLocalDataFolder(): Promise<Path> {
         if (!this._localAppDataFolder) {
-            this._localAppDataFolder = new Path([], await appLocalDataDir());
+            this._localAppDataFolder = new Path([]);
         }
         return this._localAppDataFolder;
     }
@@ -177,7 +177,7 @@ export class ProjectManager {
     /** Get the Project data of the currently-open project. */
     static async getCurrentProject(): Promise<Project> {
         const currentInfoPath = await (await ProjectManager.getLocalDataFolder()).join('current.json');
-        const currentProject: Project = JSON.parse(await currentInfoPath.absolute())
+        const currentProject: Project = JSON.parse(await readTextFile(await currentInfoPath.absolute()))
         return currentProject;
     }
 

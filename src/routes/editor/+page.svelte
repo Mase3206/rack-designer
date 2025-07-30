@@ -1,7 +1,7 @@
 <script lang="ts">
     import { goto } from "$app/navigation";
     import { page } from "$app/state";
-    import { ProjectManager as pm, type ProjectContainer } from "$lib/project";
+    import { ProjectManager as pm, type Project } from "$lib/project";
     import { setContext, getContext } from "svelte";
     import { Alert } from "flowbite-svelte";
     import Project from "$lib/components/Project.svelte";

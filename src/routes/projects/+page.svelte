@@ -1,7 +1,7 @@
 <script lang="ts">
     import { type PageProps } from "./$types";
     import { Modal, Button, Label, Input } from "flowbite-svelte";
-    import { ProjectManager as pm, type ProjectContainer } from "$lib/project";
+    import { ProjectManager as pm, type Project } from "$lib/project";
     import { setContext } from "svelte";
     import { goto } from "$app/navigation";
 
@@ -23,7 +23,7 @@
         // goto(getEditorUrl(projectContainer));
     }
 
-    function getEditorUrl(container: ProjectContainer) {
+    function getEditorUrl(container: Project) {
         return `/editor?project=${JSON.stringify(container)}`
     }
 </script>
